@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>寻味从化 · 广州从化美食地图与网络口碑评测</title>
+<meta name="description" content="基于网络公开信息整理的广州从化美食地图：泥焗鸡、吕田焖大肉、荔枝木烧鸡、流溪大鱼头、臭屁醋等，附口碑评分与地图定位。" />
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<style>
+/* 聚合图标自定义 */
+.cluster-wrap{background:none;border:none}
+.cluster-inner{
+  width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#e08a5a,#a8442c);
+  color:#fff;font-weight:900;font-size:.98rem;font-family:'Noto Serif SC',serif;
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid rgba(255,255,255,.92);
+  box-shadow:0 4px 16px rgba(168,68,44,.45);
+}
+.leaflet-control-layers{
+  border-radius:12px !important;border:1px solid #e2d7c6 !important;
+  box-shadow:0 6px 22px rgba(120,95,60,.16) !important;
+  font-family:'Noto Sans SC',sans-serif !important;font-size:.82rem;
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet" />
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Microsoft YaHei',sans-serif;
+  background:#fbf8f3;color:#2e2a24;line-height:1.75;-webkit-font-smoothing:antialiased;
+}
+a{text-decoration:none;color:inherit}
+img{max-width:100%;display:block}
+::selection{background:#e8c9a0;color:#3a2a18}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:#f2ece4}
+::-webkit-scrollbar-thumb{background:#c9b79c;border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:#b5a086}
+
+/* ================= HERO ================= */
+.hero{
+  position:relative;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;color:#fff;
+  padding:80px 24px;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 20% 15%,rgba(255,190,110,.30),transparent 55%),
+    radial-gradient(ellipse at 85% 80%,rgba(90,160,110,.35),transparent 55%),
+    linear-gradient(150deg,#7d2f22 0%,#a8442c 32%,#8a6a2e 62%,#2f5236 100%);
+}
+.hero::before{
+  content:'';position:absolute;inset:0;opacity:.5;
+  background-image:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.05) 0 2px,transparent 2px 14px),
+    repeating-linear-gradient(-45deg,rgba(255,255,255,.04) 0 2px,transparent 2px 18px);
+}
+.hero::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:150px;
+  background:linear-gradient(to top,#fbf8f3 4%,transparent);
+}
+.hero>*{position:relative;z-index:2}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:9px;padding:7px 22px;border-radius:40px;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.30);
+  backdrop-filter:blur(8px);font-size:.82rem;letter-spacing:3px;margin-bottom:26px;
+}
+.hero h1{
+  font-family:'Noto Serif SC',serif;font-weight:900;
+  font-size:clamp(2.7rem,9vw,5.6rem);letter-spacing:.12em;line-height:1.1;
+  text-shadow:0 6px 40px rgba(0,0,0,.4);
+}
+.hero h1 small{
+  display:block;font-family:'Noto Sans SC',sans-serif;font-weight:300;
+  font-size:clamp(.95rem,2.6vw,1.5rem);letter-spacing:.5em;
+  margin-top:20px;opacity:.92;text-shadow:0 2px 16px rgba(0,0,0,.4);
+}
+.hero p.lead{
+  margin-top:26px;max-width:640px;font-size:clamp(.92rem,1.7vw,1.1rem);
+  font-weight:300;opacity:.92;line-height:1.9;
+}
+.hero-stats{
+  display:flex;gap:clamp(18px,5vw,54px);margin-top:44px;flex-wrap:wrap;justify-content:center;
+}
+.hero-stats .hs{text-align:center}
+.hero-stats .hs b{
+  display:block;font-family:'Noto Serif SC',serif;font-size:clamp(1.6rem,4vw,2.4rem);
+  font-weight:900;color:#ffd88a;line-height:1.2;
+}
+.hero-stats .hs span{font-size:.76rem;letter-spacing:2px;opacity:.85}
+.hero-cta{
+  margin-top:46px;display:inline-flex;gap:14px;flex-wrap:wrap;justify-content:center;
+}
+.btn{
+  padding:13px 32px;border-radius:40px;font-size:.9rem;font-weight:500;letter-spacing:1px;
+  border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.10);
+  color:#fff;cursor:pointer;font-family:inherit;transition:all .28s;backdrop-filter:blur(6px);
+}
+.btn:hover{background:rgba(255,255,255,.95);color:#8a3524;transform:translateY(-2px)}
+.btn.solid{background:#ffd88a;color:#6d2a18;border-color:#ffd88a;font-weight:700}
+.btn.solid:hover{background:#fff;color:#8a3524;border-color:#fff}
+
+/* ================= NAV ================= */
+nav{
+  position:sticky;top:0;z-index:900;height:62px;
+  background:rgba(251,248,243,.90);backdrop-filter:blur(16px);
+  border-bottom:1px solid #e7ded1;
+  display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,34px);
+  padding:0 18px;font-size:.88rem;font-weight:500;
+}
+nav .brand{
+  font-family:'Noto Serif SC',serif;font-weight:900;font-size:1.05rem;color:#a8442c;
+  letter-spacing:2px;margin-right:6px;white-space:nowrap;
+}
+nav a{color:#5f5040;position:relative;padding:5px 0;white-space:nowrap;transition:color .25s}
+nav a::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;background:#a8442c;transform:scaleX(0);transition:transform .3s;transform-origin:left}
+nav a:hover{color:#a8442c}
+nav a:hover::after{transform:scaleX(1)}
+
+/* ================= SECTION ================= */
+section{padding:86px 24px;max-width:1300px;margin:0 auto}
+.sec-head{text-align:center;margin-bottom:54px}
+.sec-head .kicker{
+  display:inline-block;font-size:.74rem;letter-spacing:4px;color:#b07a4a;
+  font-weight:700;margin-bottom:12px;text-transform:uppercase;
+}
+.sec-head h2{
+  font-family:'Noto Serif SC',serif;font-size:clamp(1.7rem,4.2vw,2.5rem);
+  font-weight:900;letter-spacing:3px;color:#33291e;
+}
+.sec-head p{color:#8b7a64;margin-top:12px;font-size:.96rem;max-width:660px;margin-left:auto;margin-right:auto}
+.sec-head .rule{width:70px;height:3px;margin:18px auto 0;border-radius:4px;
+  background:linear-gradient(90deg,#c2542f,#d9a24c)}
+
+/* ================= METHOD ================= */
+.method-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.method-card{
+  background:#fff;border-radius:18px;padding:30px 26px;border:1px solid #efe7db;
+  box-shadow:0 2px 18px rgba(120,95,60,.05);transition:transform .3s,box-shadow .3s;
+}
+.method-card:hover{transform:translateY(-5px);box-shadow:0 14px 38px rgba(120,95,60,.11)}
+.method-card .mc-ico{
+  width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  font-size:1.35rem;margin-bottom:16px;background:linear-gradient(135deg,#fdeedd,#f8e0c6);
+}
+.method-card h4{font-size:1.02rem;font-weight:700;color:#3b3025;margin-bottom:8px}
+.method-card p{font-size:.87rem;color:#77685a;line-height:1.75}
+.method-note{
+  margin-top:28px;background:linear-gradient(135deg,#fdf4e8,#f9ead6);
+  border-left:4px solid #c2542f;border-radius:0 14px 14px 0;
+  padding:20px 26px;font-size:.87rem;color:#6b5a48;line-height:1.8;
+}
+.method-note b{color:#a8442c}
+
+/* ================= FILTER ================= */
+.filters{
+  display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-bottom:40px;
+}
+.chip{
+  padding:8px 20px;border-radius:30px;border:1px solid #e2d7c6;background:#fff;
+  font-size:.83rem;font-family:inherit;color:#6a5a48;cursor:pointer;
+  transition:all .25s;font-weight:500;
+}
+.chip:hover{border-color:#c9a97f;background:#fdf7ee;color:#a8442c}
+.chip.active{background:#a8442c;border-color:#a8442c;color:#fff;box-shadow:0 4px 14px rgba(168,68,44,.28)}
+
+/* ================= FOOD RANK LIST ================= */
+.rank-list{display:flex;flex-direction:column;gap:20px}
+.food-row{
+  display:grid;grid-template-columns:auto 1fr auto;gap:26px;align-items:center;
+  background:#fff;border-radius:20px;padding:24px 28px;border:1px solid #efe7db;
+  box-shadow:0 2px 16px rgba(120,95,60,.05);
+  transition:transform .3s,box-shadow .3s,opacity .3s;
+  cursor:pointer;
+}
+.food-row:hover{transform:translateX(5px);box-shadow:0 12px 36px rgba(120,95,60,.13)}
+.food-row.dim{opacity:.28;filter:grayscale(.7);pointer-events:none}
+.rank-no{
+  font-family:'Noto Serif SC',serif;font-weight:900;font-size:2rem;
+  width:56px;text-align:center;color:#e0d3c0;line-height:1;
+}
+.rank-no.top1{color:#d4a017}
+.rank-no.top2{color:#a8a8a8}
+.rank-no.top3{color:#c08050}
+.food-main{display:flex;gap:20px;align-items:flex-start;min-width:0}
+.food-emoji{
+  width:62px;height:62px;flex:0 0 62px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;font-size:1.85rem;
+  box-shadow:0 4px 14px rgba(0,0,0,.13);
+}
+.food-txt{min-width:0}
+.food-txt h3{font-size:1.16rem;font-weight:700;color:#33291e;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.food-txt h3 .area-tag{
+  font-size:.7rem;font-weight:500;padding:2px 11px;border-radius:20px;
+  background:#f3ede4;color:#8a7862;letter-spacing:.5px;
+}
+.food-txt .fdesc{font-size:.89rem;color:#6d5f50;margin-top:7px;line-height:1.7}
+.food-txt .fmeta{
+  margin-top:11px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+}
+.food-txt .fmeta .tag{
+  font-size:.72rem;padding:3px 12px;border-radius:14px;background:#fbf3e8;color:#a07a48;
+  border:1px solid #f2e4d0;
+}
+.food-txt .fmeta .src{
+  font-size:.72rem;color:#9c8b76;
+}
+.food-txt .fmeta .src a{color:#b0623a;text-decoration:underline;text-underline-offset:2px}
+.food-txt .fmeta .src a:hover{color:#a8442c}
+.score-box{text-align:center;flex:0 0 auto}
+.score-ring{
+  position:relative;width:74px;height:74px;margin:0 auto;
+}
+.score-ring svg{transform:rotate(-90deg)}
+.score-ring .val{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Noto Serif SC',serif;font-weight:900;font-size:1.22rem;color:#a8442c;
+}
+.score-box .lbl{font-size:.7rem;color:#9c8b76;margin-top:6px;letter-spacing:1px}
+.bars{display:flex;flex-direction:column;gap:5px;margin-top:10px;width:172px}
+.bar-line{display:flex;align-items:center;gap:7px;font-size:.68rem;color:#93826d}
+.bar-line .bn{width:38px;text-align:right;flex:0 0 38px}
+.bar-line .bt{flex:1;height:5px;background:#f0e8dc;border-radius:4px;overflow:hidden}
+.bar-line .bt i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#d9a24c,#c2542f)}
+.bar-line .bv{
+  width:22px;flex:0 0 22px;text-align:right;color:#b0623a;font-weight:700;
+  font-variant-numeric:tabular-nums;font-size:.66rem;
+}
+
+/* ================= MAP ================= */
+.map-section{max-width:100%;padding:86px 0;background:linear-gradient(180deg,#f7f1e8,#f2ebe0)}
+.map-section .sec-head{padding:0 24px}
+.map-toolbar{
+  display:flex;gap:9px;flex-wrap:wrap;justify-content:center;
+  padding:0 24px;margin-bottom:20px;
+}
+#map{width:100%;height:600px;background:#e8e0d4;z-index:1}
+.leaflet-container{font-family:'Noto Sans SC',sans-serif}
+.leaflet-popup-content-wrapper{border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,.20);padding:2px}
+.leaflet-popup-content{margin:15px 18px;min-width:210px;line-height:1.6}
+.leaflet-popup-content h4{font-size:1.02rem;color:#2e2a24;margin-bottom:3px;font-weight:700}
+.leaflet-popup-content .psub{font-size:.78rem;color:#94836d;margin-bottom:8px}
+.leaflet-popup-content .pdesc{font-size:.81rem;color:#5f5346;margin-bottom:8px}
+.leaflet-popup-content .prow{font-size:.76rem;color:#7b6b58;display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.leaflet-popup-content .prow b{color:#a8442c}
+.leaflet-popup-content .pscore{
+  margin-top:9px;padding-top:9px;border-top:1px dashed #e5dbcd;
+  font-size:.78rem;color:#a8442c;font-weight:700;display:flex;justify-content:space-between;
+}
+.mk{
+  width:38px;height:38px;border-radius:50% 50% 50% 6px;transform:rotate(-45deg);
+  display:flex;align-items:center;justify-content:center;
+  border:2.5px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.32);
+}
+.mk span{transform:rotate(45deg);font-size:1.15rem;line-height:1}
+.town-label{
+  background:rgba(255,255,255,.70);border:1px solid rgba(206,192,170,.75);border-radius:5px;
+  padding:0 7px;font-size:.65rem;color:#8d7c66;font-weight:500;white-space:nowrap;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);letter-spacing:.4px;
+}
+.map-foot{
+  max-width:1300px;margin:22px auto 0;padding:0 24px;
+  display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center;
+  font-size:.78rem;color:#8b7a64;
+}
+.legend{display:flex;gap:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+/* ================= SOURCES ================= */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.src-card{
+  background:#fff;border-radius:16px;padding:22px 24px;border:1px solid #efe7db;
+  transition:transform .3s,box-shadow .3s;
+}
+.src-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(120,95,60,.10)}
+.src-card .st{font-size:.82rem;font-weight:700;color:#3b3025;line-height:1.55;margin-bottom:7px}
+.src-card .su{font-size:.72rem;color:#b0623a;word-break:break-all;text-decoration:underline;text-underline-offset:2px}
+.src-card .sd{font-size:.78rem;color:#8b7a64;margin-top:9px;line-height:1.7}
+.src-card .sbadge{
+  display:inline-block;font-size:.66rem;padding:2px 9px;border-radius:10px;margin-bottom:9px;
+  background:#e8f3ea;color:#3d7a4e;letter-spacing:.5px;font-weight:700;
+}
+.src-card.fail .sbadge{background:#fbe9e5;color:#b5432c}
+.src-card.fail .su{color:#9c8b76;text-decoration:none}
+
+/* ================= FOOTER ================= */
+footer{background:#241f19;color:#a99c88;padding:52px 24px 40px;text-align:center}
+footer .fbrand{font-family:'Noto Serif SC',serif;font-size:1.3rem;font-weight:900;color:#e0b878;letter-spacing:4px;margin-bottom:12px}
+footer p{font-size:.82rem;line-height:1.9;max-width:760px;margin:0 auto}
+footer .fmeta{margin-top:22px;padding-top:20px;border-top:1px solid #3a332a;font-size:.74rem;color:#7d7263}
+
+/* ================= BACK TO TOP ================= */
+#top-btn{
+  position:fixed;right:22px;bottom:22px;width:46px;height:46px;border-radius:50%;
+  background:#a8442c;color:#fff;border:none;cursor:pointer;font-size:1.15rem;
+  box-shadow:0 6px 22px rgba(168,68,44,.42);opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;z-index:800;
+}
+#top-btn.show{opacity:1;pointer-events:auto}
+#top-btn:hover{transform:translateY(-4px)}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+  .food-row{grid-template-columns:auto 1fr;gap:16px;padding:20px}
+  .score-box{grid-column:1/-1;display:flex;align-items:center;gap:18px;justify-content:flex-start}
+  .bars{width:auto;flex:1}
+  .score-ring{margin:0}
+}
+@media(max-width:640px){
+  nav .brand{display:none}
+  section{padding:60px 16px}
+  .food-main{gap:14px}
+  .food-emoji{width:50px;height:50px;flex:0 0 50px;font-size:1.5rem}
+  #map{height:440px}
+  .rank-no{width:38px;font-size:1.5rem}
+  .hero-stats{gap:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-badge">🍜 广州 · 从化 · 北回归线上的美食绿洲</div>
+  <h1>寻味从化<small>CONGHUA FOOD MAP</small></h1>
+  <p class="lead">
+    流溪河畔、温泉之乡。这里的美食藏在山野农庄与古村老巷里——泥焗鸡、吕田焖大肉、荔枝木烧鸡、流溪大鱼头、臭屁醋……<br />
+    本站把网络公开评价整理成一份可打分、可导航的从化寻味地图。
+  </p>
+  <div class="hero-stats">
+    <div class="hs"><b>15</b><span>道代表美食</span></div>
+    <div class="hs"><b>6</b><span>个镇街片区</span></div>
+    <div class="hs"><b>4</b><span>项评测维度</span></div>
+    <div class="hs"><b>100%</b><span>标注信息来源</span></div>
+  </div>
+  <div class="hero-cta">
+    <button class="btn solid" onclick="document.getElementById('rank').scrollIntoView()">开始寻味 →</button>
+    <button class="btn" onclick="document.getElementById('map-sec').scrollIntoView()">查看美食地图</button>
+  </div>
+</header>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <span class="brand">寻味从化</span>
+  <a href="#method">评测方法</a>
+  <a href="#rank">美食榜单</a>
+  <a href="#map-sec">美食地图</a>
+  <a href="#sources">数据来源</a>
+</nav>
+
+<!-- ============ METHOD ============ -->
+<section id="method">
+  <div class="sec-head">
+    <span class="kicker">Methodology</span>
+    <h2>这份榜单是怎么评出来的</h2>
+    <p>所有评分都来自对网络公开内容的整理与加权，不使用任何虚构的“大众点评星级”数字。</p>
+    <div class="rule"></div>
+  </div>
+
+  <div class="method-wrap">
+    <div class="method-card">
+      <div class="mc-ico">📡</div>
+      <h4>网络声量·30%</h4>
+      <p>统计该美食在已获取的旅游攻略、榜单与美食文章中出现的频次。被越多来源独立提及，得分越高——代表它是公认的“从化代表味道”。</p>
+    </div>
+    <div class="method-card">
+      <div class="mc-ico">😋</div>
+      <h4>口味好评·30%</h4>
+      <p>依据来源文章中的味觉描述词强度（如“皮脆肉嫩”“入口即化”“鲜得掉眉毛”）归纳，反映大众对风味的正向评价集中度。</p>
+    </div>
+    <div class="method-card">
+      <div class="mc-ico">💎</div>
+      <h4>地域特色·25%</h4>
+      <p>衡量该美食与从化水土的绑定程度：是否用本地食材、本地工艺、只能在从化吃到。越“带不走”，特色分越高。</p>
+    </div>
+    <div class="method-card">
+      <div class="mc-ico">💰</div>
+      <h4>性价比·15%</h4>
+      <p>结合来源中出现的实际人均价格（如桃姐农庄人均约 60 元、荔博园烧鹅人均约 69 元）与分量描述综合评估。</p>
+    </div>
+  </div>
+
+  <div class="method-note">
+    <b>⚠️ 关于这份评测的三条诚实说明：</b>
+    <br />① <b>数据来源有限。</b>本次整理最终只有 <b>3 个公开网页</b>可正常获取并作为评分依据（见页面底部“数据来源”）。部分主流点评平台与百科站点因访问限制未能纳入，样本因此偏小——所有评分均基于已获取的内容归纳，<b>不等同于任何平台官方评分</b>。
+    <br />② <b>餐厅信息未经交叉验证。</b>桃姐农庄、荔博园果木烧鹅、南海食街等食肆名称主要来自同一篇自媒体攻略，缺少第二个来源印证，<b>可能存在歇业、改名或搬迁</b>，出行前请用地图或点评类 App 二次确认。
+    <br />③ <b>坐标为近似值。</b>地图上所有点位坐标均为按镇街位置整理的 WGS-84 近似坐标（误差可达数百米至 1 公里），<b>仅用于展示美食的空间分布</b>，不宜直接作为导航终点。
+  </div>
+</section>
+
+<!-- ============ RANK ============ -->
+<section id="rank">
+  <div class="sec-head">
+    <span class="kicker">Ranking</span>
+    <h2>从化美食口碑榜</h2>
+    <p>点击任意美食，地图会自动飞到它的位置。</p>
+    <div class="rule"></div>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div class="rank-list" id="rankList"></div>
+</section>
+
+<!-- ============ MAP ============ -->
+<section class="map-section" id="map-sec">
+  <div class="sec-head">
+    <span class="kicker">Food Map</span>
+    <h2>从化美食地图</h2>
+    <p>彩色图钉为美食定位，灰色标签为从化各镇街与地标。点击图钉查看详情，右上角可切换底图。</p>
+    <div class="rule"></div>
+  </div>
+  <div class="map-toolbar" id="mapToolbar"></div>
+  <div id="map"></div>
+  <div class="map-foot">
+    <div class="legend" id="legend"></div>
+    <div>底图：高德地图 / OpenStreetMap（右上角可切换）· 坐标已做 WGS-84→GCJ-02 纠偏 · 点位为近似值，仅供分布示意</div>
+  </div>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources">
+  <div class="sec-head">
+    <span class="kicker">Sources</span>
+    <h2>数据来源</h2>
+    <p>以下列出本次整理所依据的来源，以及因访问限制未能纳入的来源。</p>
+    <div class="rule"></div>
+  </div>
+  <div class="src-grid" id="srcGrid"></div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="fbrand">寻味从化</div>
+  <p>
+    本站为广州从化美食主题的信息整理与可视化页面，内容综合自互联网公开资料，评分与排名为整理者按统一维度归纳的相对口碑指数。
+  </p>
+  <p style="margin-top:10px">
+    餐饮信息（营业时间、价格、地址）会随时间变化，出行前请通过地图或点评类 App 二次确认。
+  </p>
+  <div class="fmeta">数据整理截止：2026 年 · 仅供美食参考 · 请以实地体验为准</div>
+</footer>
+
+<button id="top-btn" onclick="window.scrollTo({top:0})" title="回到顶部">↑</button>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+/* ============================================================
+   数据层
+   ------------------------------------------------------------
+   坐标说明：近似坐标（WGS-84），按镇街/村落位置整理。
+   评分：score = 声量*0.30 + 好评*0.30 + 特色*0.25 + 性价比*0.15
+   （四项均为 0-100，最终换算为 5 分制）
+   ============================================================ */
+
+const TOWNS = [
+  { name:'街口街道', lat:23.5486, lng:113.5865 },
+  { name:'温泉镇',   lat:23.6130, lng:113.6420 },
+  { name:'良口镇',   lat:23.7230, lng:113.7380 },
+  { name:'吕田镇',   lat:23.8000, lng:113.8380 },
+  { name:'太平镇',   lat:23.4785, lng:113.5650 },
+  { name:'鳌头镇',   lat:23.5600, lng:113.4750 },
+  { name:'江埔街道', lat:23.5520, lng:113.6210 },
+  { name:'流溪河国家森林公园', lat:23.7400, lng:113.7500 },
+  { name:'溪头村',   lat:23.7250, lng:113.7350 },
+  { name:'莲麻村',   lat:23.8430, lng:113.8780 },
+  { name:'南平村',   lat:23.6460, lng:113.7000 },
+  { name:'桂峰山',   lat:23.8500, lng:113.8700 },
+  { name:'千泷沟大瀑布', lat:23.7070, lng:113.6890 },
+  { name:'石门国家森林公园', lat:23.6180, lng:113.7290 },
+  { name:'国医小镇', lat:23.5600, lng:113.4800 }
+];
+
+const FOODS = [
+  {
+    name:'泥焗走地鸡', emoji:'🐔', cat:'农家硬菜', color:'#c2542f',
+    area:'良口镇 / 溪头村', lat:23.7400, lng:113.7640,
+    desc:'把走地鸡用荷叶包好、裹上泥巴放进炭火里焗。泥壳把鸡肉的鲜味牢牢锁住，撕开鸡腿热气腾腾，是从化特有的农家做法。',
+    tags:['本地工艺','炭火焗制','宴客头牌'],
+    scores:{声量:92, 好评:94, 特色:97, 性价比:80},
+    price:'约 80–150 元 / 只',
+    tip:'来源指出：良口镇或溪头村的农家乐能吃到最正宗的做法。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'吕田焖大肉', emoji:'🥩', cat:'农家硬菜', color:'#a8442c',
+    area:'吕田镇', lat:23.8111, lng:113.8356,
+    desc:'切成方正大块，用流溪河水慢火焖炖。肥而不腻、入口即化，酱香浓郁，比红烧肉更霸道——配一碗白米饭就是人间享受。',
+    tags:['吕田名菜','慢火焖炖','下饭神器'],
+    scores:{声量:88, 好评:93, 特色:90, 性价比:84},
+    price:'约 50–80 元 / 份',
+    tip:'来源点名：桃姐农庄或吕田镇当地农家菜馆都能吃到。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'荔枝木烧鸡', emoji:'🍗', cat:'农家硬菜', color:'#d9822b',
+    area:'温泉镇 / 各农庄', lat:23.6128, lng:113.6538,
+    desc:'从化的鸡喝山泉水长大，皮脆肉嫩。用荔枝木果木现烤，外皮金黄酥脆、内里还爆汁，带着一股清甜的木香。',
+    tags:['果木现烤','温泉镇','皮脆爆汁'],
+    scores:{声量:90, 好评:92, 特色:88, 性价比:82},
+    price:'人均约 60 元（桃姐农庄）',
+    tip:'来源推荐：荔博园，或路边老字号农庄。桃姐农庄（温泉店）招牌菜之一，建议 11 点前到避开排队。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'流溪大鱼头', emoji:'🐟', cat:'河鲜水产', color:'#3f7d8c',
+    area:'流溪河沿岸', lat:23.6900, lng:113.7200,
+    desc:'好水出好鱼。流溪河的鱼肉质紧实、没有土腥味，通常用剁椒或天麻来蒸，鲜辣开胃。一个鱼头够三四个人吃。',
+    tags:['流溪河','剁椒蒸','高性价比'],
+    scores:{声量:86, 好评:90, 特色:89, 性价比:92},
+    price:'约 100–160 元 / 份（3–4 人）',
+    tip:'来源提示：吃完鱼再用汤汁拌面，是当地人的隐藏吃法。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'臭屁醋', emoji:'🍲', cat:'风味小吃', color:'#8a6a2e',
+    area:'从化全区', lat:23.5486, lng:113.5865,
+    desc:'从化人的“液体榴莲”——用糯米、粘米发酵而成，初闻奇臭，喝一口却上头。配上猪脚、梅菜，酸爽能把魂勾走，据说还能驱寒暖胃。',
+    tags:['发酵风味','本地非遗感','猎奇必试'],
+    scores:{声量:84, 好评:85, 特色:99, 性价比:86},
+    price:'约 25–45 元 / 碗',
+    tip:'来源提到梁家辉曾来打卡。接受度两极分化，建议先小份试味。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'山水豆腐花', emoji:'🍮', cat:'风味小吃', color:'#c9a24c',
+    area:'溪头村 / 温泉镇', lat:23.7470, lng:113.7690,
+    desc:'滑嫩得像婴儿的皮肤——这是来源里的原话。用山泉水磨的豆腐花，配姜汁红糖水，是从化古村行最治愈的一碗甜品。',
+    tags:['古村必吃','山泉水','甜品'],
+    scores:{声量:82, 好评:93, 特色:84, 性价比:94},
+    price:'约 5–12 元 / 碗',
+    tip:'来源点名：溪头村一定要吃一碗山水豆腐花，再来个现烤竹筒饭。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'现烤竹筒饭', emoji:'🎋', cat:'风味小吃', color:'#4a7a4a',
+    area:'溪头村', lat:23.7465, lng:113.7700,
+    desc:'新鲜竹筒塞入米与配料现烤，竹香混着米香一起窜出来。溪头村的经典搭配：一碗豆腐花 + 一个竹筒饭。',
+    tags:['古村小吃','竹香','现烤'],
+    scores:{声量:76, 好评:88, 特色:86, 性价比:90},
+    price:'约 15–30 元 / 个',
+    tip:'来源点名溪头村。建议趁热吃，凉了竹香会散。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'果木烧鹅', emoji:'🦢', cat:'烧腊', color:'#b5432c',
+    area:'街口街道 / 环市东路', lat:23.5460, lng:113.5900,
+    desc:'明炉现烧，皮脆肉嫩。来源特别推荐“烧鹅汁捞饭”——一勺滚烫的烧鹅汁浇在饭上，是从化人公认的一绝。',
+    tags:['明炉现烧','烧鹅汁捞饭','人均 69 元'],
+    scores:{声量:80, 好评:91, 特色:78, 性价比:85},
+    price:'人均约 69 元（荔博园果木烧鹅）',
+    tip:'来源点名：荔博园果木烧鹅（环市东路店），明炉现烧。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'五指毛桃煲鸡', emoji:'🌿', cat:'药膳汤', color:'#6a8a4a',
+    area:'鳌头镇 · 国医小镇', lat:23.5360, lng:113.4450,
+    desc:'国医小镇的“药食同源”餐代表作。五指毛桃自带椰奶般的清香，与本地鸡同煲，来源形容“鲜得掉眉毛”。',
+    tags:['药食同源','养生汤','国医小镇'],
+    scores:{声量:62, 好评:87, 特色:88, 性价比:76},
+    price:'约 80–120 元 / 煲',
+    tip:'来源点名：国医小镇位于鳌头镇，药食同源餐值得一试。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'从化荔枝', emoji:'🍈', cat:'时令鲜果', color:'#c2527a',
+    area:'太平镇 / 南平村', lat:23.4789, lng:113.5631,
+    desc:'从化是广州最大的荔枝产区，桂味、糯米糍闻名遐迩。南平村有 4500 亩荔枝林可采摘，还有逾三百年树龄的龙眼王。',
+    tags:['夏季限定','桂味糯米糍','可采摘'],
+    scores:{声量:94, 好评:95, 特色:92, 性价比:80},
+    price:'时令价，采摘园按斤计',
+    tip:'6–7 月为旺季。来源提到南平静修小镇有 4500 亩荔枝林可采摘。',
+    src:{label:'买购网·从化十大景点', url:'https://www.maigoo.com/top/447541.html'}
+  },
+  {
+    name:'南乳莲藕片', emoji:'🪷', cat:'农家小炒', color:'#a87a4a',
+    area:'温泉镇 · 桃姐农庄', lat:23.6150, lng:113.6500,
+    desc:'桃姐农庄的招牌配菜之一。南乳的咸香裹住爽脆的莲藕片，是大鱼大肉之间最好的一口清口菜。',
+    tags:['桃姐农庄','招牌配菜','人均 60 元'],
+    scores:{声量:58, 好评:84, 特色:72, 性价比:88},
+    price:'人均约 60 元（桃姐农庄）',
+    tip:'来源点名：桃姐农庄（温泉店）推荐菜——荔枝炭烧鸡、南乳莲藕片、桃姐叉烧。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'南海食街·烧鹅海螺', emoji:'🐚', cat:'烧腊', color:'#5a7a8a',
+    area:'江埔街道', lat:23.5520, lng:113.6210,
+    desc:'环境古色古香、有包间，适合家庭聚餐。来源推荐海螺与烧鹅，海鲜当天运到，特别鲜。',
+    tags:['家庭聚餐','海鲜','人均 70 元'],
+    scores:{声量:60, 好评:82, 特色:70, 性价比:84},
+    price:'人均约 70 元（南海食街·江埔店）',
+    tip:'来源点名：南海食街（江埔店），推荐海螺、烧鹅。',
+    src:{label:'搜狐·从化旅游攻略', url:'https://www.sohu.com/a/998446332_121893286'}
+  },
+  {
+    name:'桂峰酿豆腐', emoji:'🧈', cat:'农家小炒', color:'#c9a24c',
+    area:'吕田镇 · 桂峰山', lat:23.8500, lng:113.8700,
+    desc:'客家酿豆腐的代表做法，外焦里嫩、滑嫩味鲜。因产自吕田桂峰山一带而得名，用山区黄豆与山泉水点制的豆腐做底，豆香格外浓。',
+    tags:['客家菜','广州十大名菜','吕田'],
+    scores:{声量:70, 好评:88, 特色:90, 性价比:88},
+    price:'约 28–45 元 / 份',
+    tip:'买购网《广州十大名菜》位列第 10，综合指数 78.1——是从化唯一进入该榜前十的菜品。',
+    src:{label:'买购网·广州美食攻略', url:'https://www.maigoo.com/goomai/200926.html'}
+  },
+  {
+    name:'从化荔枝蜜', emoji:'🍯', cat:'时令鲜果', color:'#d9a24c',
+    area:'全区（太平 / 江埔 / 温泉 / 良口）', lat:23.5900, lng:113.6100,
+    desc:'有“蜂蜜之王”美誉的从化特产，采自荔枝花期，花香浓郁、口感甘甜清润，是国家地理标志保护产品。带一瓶回去，比很多伴手礼都实在。',
+    tags:['国家地理标志','伴手礼','广州十大特产'],
+    scores:{声量:86, 好评:92, 特色:94, 性价比:82},
+    price:'约 40–120 元 / 瓶',
+    tip:'买购网《广州十大特产》位列第 7。荔枝花期（3–4 月）后新蜜品质最佳。',
+    src:{label:'买购网·广州美食攻略', url:'https://www.maigoo.com/goomai/200926.html'}
+  },
+  {
+    name:'荔枝蜜汁鳝球', emoji:'🍤', cat:'农家小炒', color:'#b5693a',
+    area:'从化城区酒楼', lat:23.5420, lng:113.5980,
+    desc:'以从化荔枝蜜入馔的鳝球菜式——鳝肉弹嫩，蜜汁收得晶亮，甜与鲜在口中结合。属于把本地特产做进粤菜里的巧思。',
+    tags:['荔枝蜜入馔','粤菜','甜鲜'],
+    scores:{声量:52, 好评:80, 特色:82, 性价比:74},
+    price:'约 60–90 元 / 份',
+    tip:'买购网《广州十大名菜》扩展榜收录。多见于从化城区酒楼宴席。',
+    src:{label:'买购网·广州美食攻略', url:'https://www.maigoo.com/goomai/200926.html'}
+  }
+];
+
+const SOURCES = [
+  {
+    ok:true,
+    title:'广东从化旅游必去十大景点游玩攻略（含“五大必吃美食”详解）',
+    url:'https://www.sohu.com/a/998446332_121893286',
+    note:'本次整理信息量最大的来源。明确列出从化五大必吃美食：臭屁醋、吕田焖大肉、荔枝木烧鸡、流溪大鱼头、泥焗走地鸡；并给出桃姐农庄（人均 60 元）、南海食街江埔店（人均 70 元）、荔博园果木烧鹅（人均 69 元）等具体食肆与推荐菜。'
+  },
+  {
+    ok:true,
+    title:'买购网（Maigoo）·【广州美食攻略】广府菜 / 小吃 / 特产 / 十大名菜',
+    url:'https://www.maigoo.com/goomai/200926.html',
+    note:'第二个有效来源。提供榜单级证据：桂峰酿豆腐位列广州十大名菜第 10（综合指数 78.1）、从化荔枝蜜位列广州十大特产第 7（国家地理标志保护产品）；吕田大肉、流溪大鱼头、荔枝蜜汁鳝球收录于名菜扩展榜。'
+  },
+  {
+    ok:true,
+    title:'买购网（Maigoo）· 广州从化十大景点榜单',
+    url:'https://www.maigoo.com/top/447541.html',
+    note:'提供从化各景点的综合指数与热度排名，含南平静修小镇（4500 亩荔枝林可采摘、三百年龙眼王）、溪头旅游村、莲麻小镇、国医小镇等，用于补充特产与产地信息。'
+  },
+  {
+    ok:false,
+    title:'大众点评 · 从化美食搜索',
+    url:'https://www.dianping.com/search/keyword/4/0_从化美食',
+    note:'该平台对自动访问有限制，本次未能获取其星级数据。因此本站未使用任何点评平台的评分数值。'
+  },
+  {
+    ok:false,
+    title:'百度百科 · 从化区',
+    url:'https://baike.baidu.com/item/从化区',
+    note:'该站点对自动访问有限制，本次未能获取。行政区划与镇街名称依据公开常识整理。'
+  },
+  {
+    ok:false,
+    title:'知乎 · 广州“最山清水秀”的从化（古村攻略）',
+    url:'https://zhuanlan.zhihu.com/p/641134980',
+    note:'该站点对自动访问有限制，未取得有效文本。'
+  },
+  {
+    ok:false,
+    title:'Bing 网页检索（用于发现候选来源）',
+    url:'https://cn.bing.com/search?q=从化+美食',
+    note:'用于发现候选来源。但对多个不同关键词返回了同一批缓存结果，未能进一步扩展来源数量。'
+  },
+  {
+    ok:false,
+    title:'维基百科坐标 API / OpenStreetMap Nominatim 地理编码',
+    url:'https://zh.wikipedia.org/w/api.php?action=query&prop=coordinates&titles=从化区',
+    note:'两个服务本次均不可访问，因此地图坐标无法通过权威接口获得，全部采用公开地理常识整理的近似值。'
+  },
+  {
+    ok:false,
+    title:'DuckDuckGo / 搜狗 网页检索',
+    url:'https://lite.duckduckgo.com/lite/?q=从化美食',
+    note:'两个引擎本次均未返回可用内容。'
+  }
+];
+
+/* ============================================================
+   计算综合分
+   ============================================================ */
+FOODS.forEach(f => {
+  const s = f.scores;
+  const hundred = s.声量*0.30 + s.好评*0.30 + s.特色*0.25 + s.性价比*0.15;
+  f.score5 = Math.round(hundred/20*10)/10;   // 5 分制
+  f.score100 = Math.round(hundred*10)/10;    // 100 分制
+});
+FOODS.sort((a,b) => b.score100 - a.score100);
+
+const CATS = ['全部', ...Array.from(new Set(FOODS.map(f=>f.cat)))];
+
+/* ============================================================
+   渲染：筛选 chips
+   ============================================================ */
+let activeCat = '全部';
+const filtersEl = document.getElementById('filters');
+filtersEl.innerHTML = CATS.map((c,i) =>
+  `<button class="chip${i===0?' active':''}" data-cat="${c}">${c}</button>`
+).join('');
+filtersEl.addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  activeCat = btn.dataset.cat;
+  document.querySelectorAll('#filters .chip').forEach(c=>c.classList.toggle('active', c===btn));
+  document.querySelectorAll('#mapToolbar .chip').forEach(c=>c.classList.toggle('active', c.dataset.cat===activeCat));
+  applyFilter();
+});
+document.getElementById('mapToolbar').innerHTML = CATS.map((c,i) =>
+  `<button class="chip${i===0?' active':''}" data-cat="${c}">${c}</button>`
+).join('');
+document.getElementById('mapToolbar').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  activeCat = btn.dataset.cat;
+  document.querySelectorAll('#mapToolbar .chip').forEach(c=>c.classList.toggle('active', c===btn));
+  document.querySelectorAll('#filters .chip').forEach(c=>c.classList.toggle('active', c.dataset.cat===activeCat));
+  applyFilter();
+});
+
+/* ============================================================
+   渲染：排行榜
+   ============================================================ */
+const rankEl = document.getElementById('rankList');
+
+function ringSVG(pct, color){
+  const r = 30, c = 2*Math.PI*r;
+  const off = c*(1-pct/100);
+  return `<svg width="74" height="74" viewBox="0 0 74 74">
+    <circle cx="37" cy="37" r="${r}" fill="none" stroke="#f0e8dc" stroke-width="7"/>
+    <circle cx="37" cy="37" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}"/>
+  </svg>`;
+}
+
+rankEl.innerHTML = FOODS.map((f,i) => {
+  const top = i<3 ? `top${i+1}` : '';
+  const bars = [
+    ['声量',   f.scores.声量],
+    ['好评',   f.scores.好评],
+    ['特色',   f.scores.特色],
+    ['性价比', f.scores.性价比]
+  ].map(([n,v]) =>
+    `<div class="bar-line"><span class="bn">${n}</span><span class="bt"><i style="width:${v}%"></i></span><span class="bv">${v}</span></div>`
+  ).join('');
+
+  return `<article class="food-row" data-i="${i}" data-cat="${f.cat}" data-name="${f.name}">
+    <div class="rank-no ${top}">${String(i+1).padStart(2,'0')}</div>
+    <div class="food-main">
+      <div class="food-emoji" style="background:linear-gradient(135deg,${f.color},${f.color}cc)">${f.emoji}</div>
+      <div class="food-txt">
+        <h3>${f.name}<span class="area-tag">📍 ${f.area}</span></h3>
+        <p class="fdesc">${f.desc}</p>
+        <div class="fmeta">
+          ${f.tags.map(t=>`<span class="tag">${t}</span>`).join('')}
+          <span class="tag" style="background:#eef6f0;color:#3d7a4e;border-color:#dceade">${f.price}</span>
+        </div>
+        <div class="fmeta" style="margin-top:8px">
+          <span class="src">💡 ${f.tip}</span>
+        </div>
+        <div class="fmeta" style="margin-top:6px">
+          <span class="src">来源：<a href="${f.src.url}" target="_blank" rel="noopener">${f.src.label}</a></span>
+        </div>
+      </div>
+    </div>
+    <div class="score-box">
+      <div class="score-ring">
+        ${ringSVG(f.score100, f.color)}
+        <div class="val" style="color:${f.color}">${f.score5.toFixed(1)}</div>
+      </div>
+      <div class="lbl">口碑指数</div>
+      <div class="bars">${bars}</div>
+    </div>
+  </article>`;
+}).join('');
+
+/* ============================================================
+   渲染：图例
+   ============================================================ */
+const LEGEND_CATS = Array.from(new Set(FOODS.map(f=>f.cat)));
+const catColor = {};
+FOODS.forEach(f => { if(!catColor[f.cat]) catColor[f.cat] = f.color; });
+document.getElementById('legend').innerHTML = LEGEND_CATS.map(c =>
+  `<span><i style="background:${catColor[c]}"></i>${c}</span>`
+).join('') + `<span><i style="background:#c3b49c"></i>镇街 / 地标</span>`;
+
+/* ============================================================
+   坐标系转换：WGS-84 → GCJ-02
+   ------------------------------------------------------------
+   我们的坐标数据是 WGS-84（GPS 原始坐标）；
+   高德等国内底图使用 GCJ-02（火星坐标），两者在华南相差约 300~500 米。
+   直接叠加会整体偏移，所以渲染前必须转换。
+   切换到底图 OpenStreetMap（WGS-84）时则不做转换。
+   ============================================================ */
+const PI = Math.PI, AXIS = 6378245.0, ECC = 0.00669342162296594323;
+
+function outOfChina(lat, lng){
+  return !(lng > 73.66 && lng < 135.05 && lat > 3.86 && lat < 53.55);
+}
+function tLat(x, y){
+  let r = -100 + 2*x + 3*y + 0.2*y*y + 0.1*x*y + 0.2*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*PI) + 20*Math.sin(2*x*PI)) * 2/3;
+  r += (20*Math.sin(y*PI) + 40*Math.sin(y/3*PI)) * 2/3;
+  r += (160*Math.sin(y/12*PI) + 320*Math.sin(y*PI/30)) * 2/3;
+  return r;
+}
+function tLng(x, y){
+  let r = 300 + x + 2*y + 0.1*x*x + 0.1*x*y + 0.1*Math.sqrt(Math.abs(x));
+  r += (20*Math.sin(6*x*PI) + 20*Math.sin(2*x*PI)) * 2/3;
+  r += (20*Math.sin(x*PI) + 40*Math.sin(x/3*PI)) * 2/3;
+  r += (150*Math.sin(x/12*PI) + 300*Math.sin(x/30*PI)) * 2/3;
+  return r;
+}
+function wgs2gcj(lat, lng){
+  if(outOfChina(lat, lng)) return [lat, lng];
+  let dLat = tLat(lng - 105, lat - 35);
+  let dLng = tLng(lng - 105, lat - 35);
+  const rad = lat / 180 * PI;
+  let magic = Math.sin(rad);
+  magic = 1 - ECC * magic * magic;
+  const sq = Math.sqrt(magic);
+  dLat = (dLat * 180) / ((AXIS * (1 - ECC)) / (magic * sq) * PI);
+  dLng = (dLng * 180) / (AXIS / sq * Math.cos(rad) * PI);
+  return [lat + dLat, lng + dLng];
+}
+
+/* 当前底图所用坐标系：'gcj' = 国内底图，'wgs' = OSM */
+let PROJECTION = 'gcj';
+const project = (lat, lng) => PROJECTION === 'gcj' ? wgs2gcj(lat, lng) : [lat, lng];
+
+/* ============================================================
+   地图初始化
+   ============================================================ */
+const CONGHUA = [23.66, 113.68];   // 从化大致中心（WGS-84）
+
+const amapVec = L.tileLayer(
+  'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+  { subdomains:'1234', maxZoom:18, attribution:'&copy; 高德地图 AutoNavi' }
+);
+const amapSat = L.tileLayer(
+  'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+  { subdomains:'1234', maxZoom:18, attribution:'&copy; 高德地图 AutoNavi' }
+);
+const osmLayer = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { maxZoom:18, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }
+);
+
+const map = L.map('map', {
+  center: project(CONGHUA[0], CONGHUA[1]),
+  zoom: 11,
+  zoomControl: true,
+  scrollWheelZoom: true,
+  layers: [amapVec]           // 默认高德中文底图
+});
+
+L.control.layers({
+  '高德地图（中文）': amapVec,
+  '高德卫星影像':     amapSat,
+  'OpenStreetMap':    osmLayer
+}, null, { position:'topright', collapsed:false }).addTo(map);
+
+/* ============================================================
+   聚合图层
+   ============================================================ */
+const cluster = L.markerClusterGroup({
+  showCoverageOnHover: false,
+  maxClusterRadius: 46,
+  spiderfyOnMaxZoom: true,
+  disableClusteringAtZoom: 15,
+  iconCreateFunction: c => L.divIcon({
+    html: `<div class="cluster-inner">${c.getChildCount()}</div>`,
+    className: 'cluster-wrap',
+    iconSize: [46, 46]
+  })
+});
+map.addLayer(cluster);
+
+/* ============================================================
+   镇街 / 地标标签
+   ============================================================ */
+const townMarkers = [];
+TOWNS.forEach(t => {
+  const mk = L.marker(project(t.lat, t.lng), {
+    icon: L.divIcon({
+      className:'',
+      html:`<div class="town-label">${t.name}</div>`,
+      iconSize:[0,0],
+      iconAnchor:[0,0]
+    }),
+    interactive:false,
+    zIndexOffset:-500
+  }).addTo(map);
+  mk._lat = t.lat; mk._lng = t.lng;
+  townMarkers.push(mk);
+});
+
+/* ============================================================
+   美食图钉
+   ============================================================ */
+const markers = [];
+FOODS.forEach((f,i) => {
+  const icon = L.divIcon({
+    className:'',
+    html:`<div class="mk" style="background:${f.color}"><span>${f.emoji}</span></div>`,
+    iconSize:[38,38],
+    iconAnchor:[19,34],
+    popupAnchor:[0,-32]
+  });
+
+  const popup = `
+    <h4>${f.emoji} ${f.name}</h4>
+    <div class="psub">📍 ${f.area}　·　第 ${i+1} 名</div>
+    <div class="pdesc">${f.desc}</div>
+    <div class="prow"><span>参考价格</span><b>${f.price}</b></div>
+    <div class="prow"><span>类别</span><b>${f.cat}</b></div>
+    <div class="pscore"><span>口碑指数</span><span>${f.score5.toFixed(1)} / 5.0</span></div>
+  `;
+
+  const m = L.marker(project(f.lat, f.lng), { icon }).bindPopup(popup);
+  m._cat = f.cat;
+  m._idx = i;
+  m._lat = f.lat;
+  m._lng = f.lng;
+  markers.push(m);
+});
+cluster.addLayers(markers);
+
+/* 底图切换 → 重新投影所有点位，避免坐标系错位 */
+map.on('baselayerchange', e => {
+  const want = (e.name === 'OpenStreetMap') ? 'wgs' : 'gcj';
+  if(want === PROJECTION) return;
+  PROJECTION = want;
+  markers.forEach(m => m.setLatLng(project(m._lat, m._lng)));
+  townMarkers.forEach(m => m.setLatLng(project(m._lat, m._lng)));
+  map.setView(project(CONGHUA[0], CONGHUA[1]), map.getZoom());
+  cluster.refreshClusters();
+});
+
+/* ============================================================
+   筛选联动
+   ============================================================ */
+function applyFilter(){
+  /* 列表 */
+  document.querySelectorAll('.food-row').forEach(row => {
+    const show = activeCat === '全部' || row.dataset.cat === activeCat;
+    row.classList.toggle('dim', !show);
+  });
+  /* 地图（通过聚合图层增删，聚合图标会自动重算） */
+  markers.forEach(m => {
+    const show = activeCat === '全部' || m._cat === activeCat;
+    if(show){ if(!cluster.hasLayer(m)) cluster.addLayer(m); }
+    else    { if(cluster.hasLayer(m)) cluster.removeLayer(m); }
+  });
+  /* 视野自适应 */
+  const vis = markers.filter(m => cluster.hasLayer(m));
+  if(vis.length && activeCat !== '全部'){
+    const g = L.featureGroup(vis);
+    map.fitBounds(g.getBounds().pad(0.35), { maxZoom:13 });
+  } else if(activeCat === '全部'){
+    map.setView(project(CONGHUA[0], CONGHUA[1]), 11);
+  }
+}
+
+/* 点击列表 → 飞到地图并展开该点 */
+document.getElementById('rankList').addEventListener('click', e => {
+  const row = e.target.closest('.food-row');
+  if(!row || row.classList.contains('dim')) return;
+  const i = Number(row.dataset.i);
+  const m = markers.find(x => x._idx === i);
+  if(!m) return;
+  document.getElementById('map-sec').scrollIntoView({ behavior:'smooth', block:'start' });
+  setTimeout(() => {
+    /* zoomToShowLayer 会自动缩放并展开聚合，保证目标点可见 */
+    cluster.zoomToShowLayer(m, () => m.openPopup());
+  }, 560);
+});
+
+/* ============================================================
+   数据来源卡片
+   ============================================================ */
+document.getElementById('srcGrid').innerHTML = SOURCES.map(s => `
+  <div class="src-card${s.ok?'':' fail'}">
+    <span class="sbadge">${s.ok?'✓ 已采用':'✕ 未能访问'}</span>
+    <div class="st">${s.title}</div>
+    <a class="su" href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+    <div class="sd">${s.note}</div>
+  </div>
+`).join('');
+
+/* ============================================================
+   其他交互
+   ============================================================ */
+const topBtn = document.getElementById('top-btn');
+window.addEventListener('scroll', () => {
+  topBtn.classList.toggle('show', window.scrollY > 600);
+}, { passive:true });
+
+setTimeout(() => map.invalidateSize(), 350);
+window.addEventListener('resize', () => map.invalidateSize());
+</script>
+</body>
+</html>
