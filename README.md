@@ -307,6 +307,7 @@ python -m http.server 8080
 conghua-food/
 ├── index.html          # 网站全部内容（HTML + CSS + JS + 数据，单文件）
 ├── README.md           # 本文档
+├── CHANGELOG.md        # 更新日志（Keep a Changelog 格式）
 ├── LICENSE             # MIT 许可证
 ├── .gitignore          # Git 忽略规则
 └── preview/            # 页面截图（真实渲染，非示意图）
